@@ -91,15 +91,15 @@ class GuestEntriesEmailPlugin extends BasePlugin
   }
   public function getVersion()
   {
-    return '0.1.1';
+    return '0.2.0';
   }
   public function getDeveloper()
   {
-    return 'Will Browar';
+    return 'Sprokets Fork';
   }
   public function getDeveloperUrl()
   {
-    return 'http://wbrowar.com';
+    return 'https://github.com/Sprokets/Craft-Guest-Entries-Email-Notification';
   }
   public function hasCpSection()
   {
