@@ -1,3 +1,5 @@
+This is a forked version that we are maintaining while waiting for pull requests to go through on the upstream repo.
+
 # Craft – Guest Entries Email Notification
 Extend Pixel &amp; Tonic&rsquo;s [Guest Entries](https://github.com/pixelandtonic/GuestEntries/) plugin with email notifications.
 
