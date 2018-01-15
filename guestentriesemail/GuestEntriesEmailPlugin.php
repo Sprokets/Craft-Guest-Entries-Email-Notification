@@ -4,27 +4,27 @@ namespace Craft;
 class GuestEntriesEmailPlugin extends BasePlugin
 {
   //private $_customLinks;
-  
+
   public function init()
-	{
-  	craft()->on('guestEntries.onSuccess', function(GuestEntriesEvent $event) {
-    	// get entry object
+  {
+    craft()->on('guestEntries.onSuccess', function(GuestEntriesEvent $event) {
+      // get entry object
       $entryModel = $event->params['entry'];
       $sectionId = $entryModel['attributes']['sectionId'];
       $section = craft()->sections->getSectionById($sectionId);
       $sectionHandle = $section['handle'];
-      
+
       // get settings
       //$settings = $this->getSettings();
       $settings = craft()->plugins->getPlugin('guestentriesemail')->getSettings();
       $sendEmail = $settings['attributes']['sendEmail'][$sectionHandle];
       $emailSubject = $settings['attributes']['emailSubject'][$sectionHandle] . ': ' . $entryModel['title'];
       $emailAddresses = $settings['attributes']['emailAddresses'][$sectionHandle];
-      
+
       if ($sendEmail === '1') {
         // setup sendto email addresses
         $sendToEmails = array_map('trim', explode(',', $emailAddresses));
-        
+
         // assemble message
         $message = "<p><b>$emailSubject</b></p>\n";
 
@@ -35,6 +35,20 @@ class GuestEntriesEmailPlugin extends BasePlugin
           if(gettype($fieldValue) == "string") {
             // most fields
             $message .= "<p><b>" . $field->name . ":</b> " . $fieldValue . "</p>\n";
+          }
+          else if(is_a($fieldValue, 'Craft\SingleOptionFieldData')) {
+            $message .= "<p><b>" . $field->name . ":</b> " . $fieldValue->label . "</p>\n";
+          }
+          else if(is_a($fieldValue, 'Craft\MultiOptionsFieldData')) {
+            $fieldContent = "";
+
+            foreach($fieldValue->getOptions() as $fieldValueItem) {
+              $fieldContent .= $fieldValueItem->label . ", ";
+            }
+
+            $fieldContent = rtrim($fieldContent, ", ");
+
+            $message .= "<p><b>" . $field->name . ":</b> " . $fieldContent . "</p>\n";
           }
           else if(gettype($fieldValue) == "array") {
             // checkboxes, multi-selects
@@ -60,7 +74,7 @@ class GuestEntriesEmailPlugin extends BasePlugin
             $message .= "<p><b>" . $field->name . ":</b> " . $fieldContent . "</p>\n";
           }
         }
-        
+
         // debug plugin
         /*
         print('<pre style="color: white; white-space: pre;">');
@@ -69,7 +83,7 @@ class GuestEntriesEmailPlugin extends BasePlugin
         $entryModel->addError('title', $message);
         $event->isValid = false;
         */
-        
+
         // send email notification
         if ($event->isValid == true) {
           foreach ($sendToEmails as $value) {
@@ -78,14 +92,14 @@ class GuestEntriesEmailPlugin extends BasePlugin
             $email->subject = $emailSubject;
             $email->htmlBody = $message;
             $email->body = strip_tags($message);
-      
+
             craft()->email->sendEmail($email);
           }
         }
       }
     });
-	}
-  
+  }
+
   public function getName()
   {
     return Craft::t('Guest Entries Email Notification');
@@ -106,42 +120,42 @@ class GuestEntriesEmailPlugin extends BasePlugin
   {
     return false;
   }
-  
+
   protected function defineSettings()
-	{
-		return array(
-			'emailAddresses'  => AttributeType::Mixed,
-			'emailSubject'    => AttributeType::Mixed,
-			'sendEmail'       => AttributeType::Mixed,
-		);
-	}
-	public function getSettingsHtml()
-	{
-  	$guestEntiresPlugin = craft()->plugins->getPlugin('guestentries', true);
-  	if ($guestEntiresPlugin !== NULL) {
-    	$guestEntiresPluginInstalled = true;
-  	} else {
-    	$guestEntiresPluginInstalled = false;
-  	}
-  	
-  	
-		$editableSections = array();
-		$allSections = craft()->sections->getAllSections();
-		
-		foreach ($allSections as $section)
-		{
-			// No sense in doing this for singles.
-			if ($section->type !== 'single')
-			{
-				$editableSections[$section->handle] = array('section' => $section);
-			}
-		}
-		
-		// output settings template
-		return craft()->templates->render('guestentriesemail/settings', array(
-			'settings' => $this->getSettings(),
-			'editableSections' => $editableSections,
-			'guestEntiresPluginInstalled' => $guestEntiresPluginInstalled,
-		));
-	}
+  {
+    return array(
+      'emailAddresses'  => AttributeType::Mixed,
+      'emailSubject'    => AttributeType::Mixed,
+      'sendEmail'       => AttributeType::Mixed,
+    );
+  }
+  public function getSettingsHtml()
+  {
+    $guestEntiresPlugin = craft()->plugins->getPlugin('guestentries', true);
+    if ($guestEntiresPlugin !== NULL) {
+      $guestEntiresPluginInstalled = true;
+    } else {
+      $guestEntiresPluginInstalled = false;
+    }
+
+
+    $editableSections = array();
+    $allSections = craft()->sections->getAllSections();
+
+    foreach ($allSections as $section)
+    {
+      // No sense in doing this for singles.
+      if ($section->type !== 'single')
+      {
+        $editableSections[$section->handle] = array('section' => $section);
+      }
+    }
+
+    // output settings template
+    return craft()->templates->render('guestentriesemail/settings', array(
+      'settings' => $this->getSettings(),
+      'editableSections' => $editableSections,
+      'guestEntiresPluginInstalled' => $guestEntiresPluginInstalled,
+    ));
+  }
 }
