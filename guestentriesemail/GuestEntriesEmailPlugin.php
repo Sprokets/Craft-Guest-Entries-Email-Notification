@@ -106,7 +106,7 @@ class GuestEntriesEmailPlugin extends BasePlugin
   }
   public function getVersion()
   {
-    return '0.2.0';
+    return '0.2.1';
   }
   public function getDeveloper()
   {
